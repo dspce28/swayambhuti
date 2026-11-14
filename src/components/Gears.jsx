@@ -75,12 +75,12 @@ export function Gear({ cx, cy, teeth, r, color, health = 1, dir = 1, phase = 0, 
         <circle cx={cx} cy={cy} r={r * 0.22} fill="none" stroke={fill} strokeWidth="2" />
       </g>
       {label && (
-        <text x={cx} y={cy + 4} textAnchor="middle" className="gear-label">
+        <text x={cx} y={cy + r * 0.22 + 18} textAnchor="middle" className="gear-label">
           {label}
         </text>
       )}
       {sub != null && (
-        <text x={cx} y={cy + 22} textAnchor="middle" className="gear-sub">
+        <text x={cx} y={cy + r * 0.22 + 38} textAnchor="middle" className="gear-sub">
           {sub}
         </text>
       )}

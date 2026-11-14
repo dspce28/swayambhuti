@@ -51,8 +51,8 @@ export function Cursor() {
   const [state, setState] = useState('default')
   const x = useMotionValue(-100)
   const y = useMotionValue(-100)
-  const rx = useSpring(x, { stiffness: 260, damping: 26, mass: 0.6 })
-  const ry = useSpring(y, { stiffness: 260, damping: 26, mass: 0.6 })
+  const rx = useSpring(x, { stiffness: 700, damping: 40, mass: 0.35 })
+  const ry = useSpring(y, { stiffness: 700, damping: 40, mass: 0.35 })
 
   useEffect(() => {
     const mq = window.matchMedia('(pointer: fine)')

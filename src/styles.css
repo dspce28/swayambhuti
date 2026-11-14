@@ -48,7 +48,7 @@ body {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 img {
   display: block;
@@ -160,8 +160,9 @@ html.has-cursor select {
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+  /* generous room so italic overhangs, descenders and ™ are never clipped once revealed */
+  padding: 0.1em 0.12em 0.22em;
+  margin: -0.1em -0.12em -0.22em;
 }
 .split-word {
   display: inline-block;
@@ -332,8 +333,7 @@ html.has-cursor select {
   width: 38px;
   height: 38px;
   margin: -19px 0 0 -19px;
-  border: 1px solid var(--gold);
-  mix-blend-mode: difference;
+  border: 1.5px solid var(--gold);
   transition: background 0.3s, border-color 0.3s;
 }
 .cursor-ring.is-hover {
@@ -1120,6 +1120,9 @@ html.has-cursor select {
 }
 .engine-panel {
   width: 33.333%;
+  min-width: 0;
+  overflow-x: clip; /* content never spills sideways into the neighbouring panel */
+  overflow-y: visible;
   padding: 0 var(--gutter);
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1187,7 +1190,9 @@ html.has-cursor select {
     gap: 0;
   }
   .engine-num {
-    font-size: 6rem;
+    font-size: 4.6rem;
+    line-height: 1;
+    margin-bottom: 12px;
   }
   .engine-body ul {
     grid-template-columns: 1fr;
@@ -2291,8 +2296,7 @@ figcaption small {
   padding: clamp(22px, 3vw, 34px);
   border-radius: 26px;
   border: 1px solid var(--line-light);
-  background: rgba(246, 239, 224, 0.03);
-  backdrop-filter: blur(10px);
+  background: rgba(16, 41, 29, 0.85);
 }
 .teaser-card h3 {
   font-family: var(--serif);
@@ -3017,7 +3021,7 @@ figcaption small {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 32vw;
+  gap: max(46vw, 300px);
   font-family: var(--serif);
   font-size: clamp(3.4rem, 11vw, 11rem);
   letter-spacing: -0.04em;
@@ -3061,7 +3065,11 @@ figcaption small {
 }
 @media (max-width: 700px) {
   .meet-words {
-    gap: 40vw;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0;
+    padding: 64px 0 28px;
+    font-size: 3rem;
   }
   .meet-shade {
     background: linear-gradient(0deg, rgba(6, 19, 13, 0.95) 10%, rgba(6, 19, 13, 0.3) 60%, transparent);
@@ -3139,10 +3147,8 @@ figcaption small {
 .scta-bg {
   position: absolute;
   inset: 0;
-  background: url('/img/sunil-bw.webp') right 8% top 20% / auto 115% no-repeat;
-  opacity: 0.22;
-  -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000 60%, #000 80%, transparent 98%);
-  mask-image: linear-gradient(90deg, transparent 35%, #000 60%, #000 80%, transparent 98%);
+  background: radial-gradient(55% 70% at 85% 40%, rgba(212, 175, 90, 0.16), transparent 70%),
+    radial-gradient(45% 60% at 10% 100%, rgba(95, 211, 154, 0.12), transparent 70%);
 }
 .scta-inner {
   position: relative;
@@ -3243,10 +3249,84 @@ figcaption small {
 }
 .values-sec,
 .meet,
-.scta,
-.teaser {
+.scta {
   overflow-x: clip;
 }
-html {
-  overflow-x: clip;
+html,
+body {
+  overflow-x: clip; /* clip, never hidden: hidden turns body into a scroll container and breaks every sticky section */
+}
+
+/* =========================================================
+   Contrast pass (WCAG AA): accents adapt to light vs dark sections
+   ========================================================= */
+:root {
+  --em: #8f6b22; /* deep gold — 4.6:1 on cream */
+  --green-ink: #1f6a47; /* 5.9:1 on cream / white */
+}
+.hero,
+.page-hero,
+.problem,
+.teaser,
+.engine-scroll,
+.meet,
+.scta,
+.cta,
+.dark,
+.hc,
+.footer,
+.engine-page,
+.menu,
+.stack-card.dark,
+.case.open,
+.next-box,
+.svc-card:hover,
+.ind-card:hover,
+.ind-row.on {
+  --em: var(--gold);
+}
+.em,
+.em .split-word {
+  color: var(--em);
+}
+.text-link:not(.light),
+.chip,
+.case-ind,
+.svc-outcome,
+.eyebrow:not(.light) {
+  color: var(--green-ink);
+}
+.light .eyebrow,
+.dark .eyebrow,
+.hero .eyebrow,
+.page-hero .eyebrow,
+.problem .eyebrow,
+.teaser .eyebrow,
+.engine-page .eyebrow,
+.meet .eyebrow,
+.scta .eyebrow {
+  color: var(--gold);
+}
+.case.open .case-ind {
+  color: var(--gold);
+}
+.svc-card:hover .svc-outcome {
+  color: var(--gold-2);
+}
+.svc-card:hover .chip {
+  color: var(--gold-2);
+}
+.scta .lead,
+.teaser .lead,
+.hc .lead,
+.meet .lead,
+.problem .lead {
+  color: var(--muted-light);
+}
+
+.problem {
+  padding-bottom: clamp(60px, 7vw, 90px);
+}
+.teaser {
+  padding-top: clamp(60px, 7vw, 90px);
 }

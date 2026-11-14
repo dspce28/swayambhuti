@@ -57,7 +57,7 @@ export function About() {
         <div className="container founder-grid">
           <div className="portrait-wrap">
             <motion.div className="portrait" initial={{ clipPath: 'inset(0 100% 0 0 round 28px)' }} whileInView={{ clipPath: 'inset(0 0% 0 0 round 28px)' }} viewport={{ once: true }} transition={{ duration: 1.4, ease }}>
-              <img src="/img/sunil.webp" alt="Sunil Anandani" loading="lazy" />
+              <img src="/img/sunil-bw.webp" alt="Sunil Anandani" loading="lazy" />
             </motion.div>
           </div>
           <div className="prose">

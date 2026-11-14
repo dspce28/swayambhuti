@@ -27,8 +27,8 @@ function Hero() {
   const { scrollY, scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const vel = useVelocity(scrollY)
   const speed = useSpring(useTransform(vel, (v) => 1 + Math.min(Math.abs(v) / 250, 8)), { stiffness: 60, damping: 20 })
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, 160])
-  const contentO = useTransform(scrollYProgress, [0, 0.7], [1, 0])
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -90])
+  const contentO = useTransform(scrollYProgress, [0, 0.55], [1, 0])
   const canvasScale = useTransform(scrollYProgress, [0, 1], [1, 1.25])
 
   useEffect(() => {
@@ -253,10 +253,11 @@ function Services() {
 function EngineScroller() {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
-  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-66.666%'])
+  // each panel holds centred, then slides — no half-cut panels when the reader stops scrolling
+  const x = useTransform(scrollYProgress, [0, 0.22, 0.4, 0.6, 0.78, 1], ['0%', '0%', '-33.333%', '-33.333%', '-66.666%', '-66.666%'])
   const bar = useTransform(scrollYProgress, [0, 1], [0, 1])
   const [active, setActive] = useState(0)
-  useEffect(() => scrollYProgress.on('change', (v) => setActive(Math.min(2, Math.floor(v * 3)))), [scrollYProgress])
+  useEffect(() => scrollYProgress.on('change', (v) => setActive(v < 0.31 ? 0 : v < 0.69 ? 1 : 2)), [scrollYProgress])
 
   return (
     <section className="engine-scroll" ref={ref}>

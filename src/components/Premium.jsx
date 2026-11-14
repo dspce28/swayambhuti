@@ -214,7 +214,9 @@ export function ValuesQuad({ dark }) {
     [-1, 1],
     [1, 1],
   ]
-  const xs = dirs.map(([dx]) => useTransform(p, [0, 1], [dx * 70, 0])) // eslint-disable-line react-hooks/rules-of-hooks
+  // narrow screens: cards only rise into place (a sideways offset would push text off-screen)
+  const spread = typeof window !== 'undefined' && window.innerWidth < 760 ? 0 : 70
+  const xs = dirs.map(([dx]) => useTransform(p, [0, 1], [dx * spread, 0])) // eslint-disable-line react-hooks/rules-of-hooks
   const ys = dirs.map(([, dy]) => useTransform(p, [0, 1], [dy * 50, 0])) // eslint-disable-line react-hooks/rules-of-hooks
   const rs = dirs.map(([dx, dy]) => useTransform(p, [0, 1], [dx * dy * 4, 0])) // eslint-disable-line react-hooks/rules-of-hooks
   const emblem = useTransform(p, [0, 1], [0.4, 1])
@@ -261,7 +263,7 @@ export function ValuesQuad({ dark }) {
 function StackCard({ t, i, total, progress }) {
   const start = i / total
   const scale = useTransform(progress, [start, 1], [1, 1 - (total - i) * 0.04])
-  const dim = useTransform(progress, [start, Math.min(1, start + 1 / total)], [0, i === total - 1 ? 0 : 0.55])
+  const dim = useTransform(progress, [start, Math.min(1, start + 1 / total)], [0, i === total - 1 ? 0 : 0.82])
   return (
     <div className="stack-slot" style={{ top: `calc(110px + ${i * 22}px)` }}>
       <motion.figure className={`stack-card ${i % 2 ? 'dark' : ''}`} style={{ scale }}>
@@ -315,12 +317,15 @@ export function MeetSunil() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
   const p = useSpring(scrollYProgress, { stiffness: 100, damping: 24 })
   const w = useTransform(p, [0, 0.55], ['38%', '92%'])
-  const h = useTransform(p, [0, 0.55], ['68vh', '82vh'])
+  const isNarrow = typeof window !== 'undefined' && window.innerWidth <= 700
+  const h = useTransform(p, [0, 0.55], [isNarrow ? '56vh' : '68vh', '82vh'])
   const archR = useTransform(p, [0, 0.55], [400, 36])
   const baseR = useTransform(p, [0, 0.55], [20, 36])
   const leftX = useTransform(p, [0, 0.5], ['0%', '-60%'])
   const rightX = useTransform(p, [0, 0.5], ['0%', '60%'])
-  const wordsO = useTransform(p, [0.35, 0.55], [1, 0])
+  const narrow = typeof window !== 'undefined' && window.innerWidth <= 700
+  // words fade before the growing portrait can overtake them
+  const wordsO = useTransform(p, [0.06, 0.2], [1, 0])
   const capO = useTransform(p, [0.55, 0.75], [0, 1])
   const capY = useTransform(p, [0.55, 0.75], [40, 0])
   const imgScale = useTransform(p, [0, 1], [1.15, 1])
@@ -331,8 +336,8 @@ export function MeetSunil() {
     <section className="meet" ref={ref}>
       <div className="meet-sticky">
         <motion.div className="meet-words" style={{ opacity: wordsO }} aria-hidden="true">
-          <motion.span style={{ x: leftX }}>Meet</motion.span>
-          <motion.span className="em" style={{ x: rightX }}>
+          <motion.span style={narrow ? {} : { x: leftX }}>Meet</motion.span>
+          <motion.span className="em" style={narrow ? {} : { x: rightX }}>
             Sunil
           </motion.span>
         </motion.div>
