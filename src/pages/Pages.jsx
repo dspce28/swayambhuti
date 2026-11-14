@@ -6,6 +6,8 @@ import { Button, Counter, ease, Heading, Reveal, rise, SplitText, Stagger, TiltC
 import { CTA } from '../components/Layout'
 import { FAQ, StackedTestimonials, ValuesQuad } from '../components/Premium'
 import { useSeo } from '../seo'
+import { submitLead } from '../lib/leads'
+import { track } from '../lib/marketing'
 import { faqs } from '../data/content'
 
 const EngineCanvas = lazy(() => import('../three/EngineCanvas'))
@@ -156,7 +158,7 @@ function PillarBlock({ p, i, onActive }) {
           <motion.div variants={rise} className="pillar-step" key={n}>
             <span>{n}</span>
             <div>
-              <h4>{t}</h4>
+              <h3>{t}</h3>
               <p>{d}</p>
             </div>
           </motion.div>
@@ -398,6 +400,9 @@ export function Contact() {
   const [form, setForm] = useState({ name: '', company: '', email: '', phone: '', industry: '', challenge: '' })
   const [errors, setErrors] = useState({})
   const [sent, setSent] = useState(false)
+  const [delivery, setDelivery] = useState('sending') // sending | delivered | unconfigured | queued
+  const [startedAt] = useState(() => Date.now())
+  const [hp, setHp] = useState('') // honeypot: hidden from people, filled by bots
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   const validate = () => {
@@ -424,13 +429,23 @@ export function Contact() {
       .map(encodeURIComponent)
       .join('%0A')
 
-  // No backend yet: the enquiry is handed to WhatsApp (primary channel for Indian SMEs).
-  const submit = (e) => {
+  // The enquiry goes to the server first (Google Sheet / email). WhatsApp stays available as a
+  // second channel — and becomes the main action if the server could not store the lead.
+  const submit = async (e) => {
     e.preventDefault()
     if (!validate()) return
-    window.open(`https://wa.me/${site.phoneRaw}?text=${message()}`, '_blank', 'noopener')
     setSent(true)
+    setDelivery('sending')
+    track('generate_lead', { source: 'contact_form' })
+    const r = await submitLead({ type: 'contact', ...form, website: hp, startedAt })
+    if (r.state === 'invalid') {
+      setSent(false)
+      setErrors({ phone: r.error })
+      return
+    }
+    setDelivery(r.state)
   }
+  const waHref = `https://wa.me/${site.phoneRaw}?text=${message()}`
 
   const field = (k, label, type = 'text', req = true) => (
     <label className={`field ${errors[k] ? 'has-error' : ''} ${form[k] ? 'filled' : ''}`}>
@@ -481,7 +496,7 @@ export function Contact() {
               ))}
             </Stagger>
             <Reveal className="next-box">
-              <h4>What happens next</h4>
+              <h3>What happens next</h3>
               <p>Sunil's team will reach out within 24 hours to schedule a 60-minute Business Performance Audit call — at no charge, with no obligation.</p>
             </Reveal>
           </div>
@@ -494,13 +509,37 @@ export function Contact() {
                     <motion.circle cx="26" cy="26" r="24" fill="none" stroke="currentColor" strokeWidth="2" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.8 }} />
                     <motion.path d="M15 27l7 7 15-16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.6, duration: 0.5 }} />
                   </svg>
-                  <h3>Almost done, {form.name.split(' ')[0]}.</h3>
-                  <p>We opened WhatsApp with your details pre-filled — just hit send. Prefer email?</p>
-                  <div className="btn-row center">
-                    <Button href={`mailto:${site.email}?subject=${encodeURIComponent('Business Performance Audit — ' + form.company)}&body=${message()}`} icon="mail" variant="dark">
-                      Send by email instead
-                    </Button>
-                  </div>
+                  {delivery === 'sending' && (
+                    <>
+                      <h3>Sending, {form.name.split(' ')[0]}…</h3>
+                      <p>One moment while we save your details.</p>
+                    </>
+                  )}
+                  {delivery === 'delivered' && (
+                    <>
+                      <h3>Received, {form.name.split(' ')[0]}.</h3>
+                      <p>Sunil's team will call you within 24 hours to schedule your free audit. Want to say hello now?</p>
+                      <div className="btn-row center">
+                        <Button href={waHref} icon="arrow" variant="dark">
+                          Message on WhatsApp
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                  {(delivery === 'unconfigured' || delivery === 'queued') && (
+                    <>
+                      <h3>Almost done, {form.name.split(' ')[0]}.</h3>
+                      <p>Tap below to send your details to Sunil on WhatsApp — they're already filled in. Prefer email?</p>
+                      <div className="btn-row center">
+                        <Button href={waHref} icon="arrow">
+                          Send on WhatsApp
+                        </Button>
+                        <Button href={`mailto:${site.email}?subject=${encodeURIComponent('Business Performance Audit — ' + form.company)}&body=${message()}`} icon="mail" variant="dark">
+                          Send by email
+                        </Button>
+                      </div>
+                    </>
+                  )}
                   <button className="text-link" onClick={() => setSent(false)}>
                     Edit details
                   </button>
@@ -508,6 +547,7 @@ export function Contact() {
               ) : (
                 <motion.form key="form" onSubmit={submit} noValidate exit={{ opacity: 0, y: -10 }}>
                   <h3>Book free audit session</h3>
+                  <input className="hp" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={hp} onChange={(e) => setHp(e.target.value)} />
                   <p className="muted">Fill in your details and we'll be in touch within 24 hours.</p>
                   <div className="form-row">
                     {field('name', 'Full name')}

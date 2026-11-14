@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, useTransform } from 'motion/react'
+import { AnimatePresence, motion, useInView, useMotionValueEvent, useScroll, useSpring, useTransform } from 'motion/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { availability, faqs, impact, process, testimonials, values } from '../data/content'
 import { questions } from '../data/healthcheck'
@@ -141,6 +141,7 @@ export function ProcessPinned() {
   const tilt = useSpring(useTransform(scrollYProgress, [0, 1], [-2.5, 2.5]), { stiffness: 80, damping: 20 })
   const step = process[i]
   const Scene = scenes[step.scene]
+  const onScreen = useInView(ref, { margin: '0px' }) // looping SVG animations stop when off-screen
 
   return (
     <section className="process" ref={ref} style={{ height: `${process.length * 90 + 30}vh` }}>
@@ -178,7 +179,7 @@ export function ProcessPinned() {
           <motion.div className="process-frame" style={{ rotate: tilt }}>
             <AnimatePresence initial={false}>
               <motion.div key={step.scene} className="process-scene" initial={{ clipPath: 'inset(100% 0 0 0)' }} animate={{ clipPath: 'inset(0% 0 0 0)' }} exit={{ opacity: 0.4 }} transition={{ duration: 0.8, ease }}>
-                <Scene />
+                {onScreen && <Scene />}
               </motion.div>
             </AnimatePresence>
             <span className="process-badge">

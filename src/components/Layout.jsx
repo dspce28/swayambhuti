@@ -146,18 +146,31 @@ export function Preloader() {
   )
 }
 
-/* ---------- Page transition curtain ---------- */
+/* ---------- Page transition curtain ----------
+   Plays only on navigation between pages. On first arrival the server-rendered page is shown
+   immediately — never hidden behind a curtain or faded in (that delayed first paint by seconds). */
+let firstPage = true
 export function PageTransition({ children }) {
+  const [first] = useState(() => firstPage)
+  useEffect(() => {
+    firstPage = false
+  }, [])
   return (
     <>
+      {!first && (
+        <motion.div
+          className="curtain"
+          initial={{ scaleY: 1 }}
+          animate={{ scaleY: 0, transition: { duration: 0.8, ease, delay: 0.05 } }}
+          exit={{ scaleY: 1, transition: { duration: 0.55, ease } }}
+          style={{ originY: 0 }}
+        />
+      )}
       <motion.div
-        className="curtain"
-        initial={{ scaleY: 1 }}
-        animate={{ scaleY: 0, transition: { duration: 0.8, ease, delay: 0.05 } }}
-        exit={{ scaleY: 1, transition: { duration: 0.55, ease } }}
-        style={{ originY: 0 }}
-      />
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease, delay: 0.25 } }} exit={{ opacity: 0, transition: { duration: 0.3 } }}>
+        initial={first ? false : { opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease, delay: first ? 0 : 0.25 } }}
+        exit={{ opacity: 0, transition: { duration: 0.3 } }}
+      >
         {children}
       </motion.div>
     </>
@@ -282,7 +295,7 @@ export function Footer() {
             </p>
           </div>
           <div>
-            <h4>Company</h4>
+            <p className="footer-h">Company</p>
             {[['/', 'Home'], ['/about', 'About Sunil'], ['/engine', 'SME Engine™'], ['/case-studies', 'Case Studies'], ['/blog', 'Blog'], ['/contact', 'Contact']].map(([to, l]) => (
               <Link key={to} to={to}>
                 {l}
@@ -290,7 +303,7 @@ export function Footer() {
             ))}
           </div>
           <div>
-            <h4>Services</h4>
+            <p className="footer-h">Services</p>
             {services.slice(0, 5).map((s) => (
               <Link key={s.name} to="/services">
                 {s.name}
@@ -298,7 +311,7 @@ export function Footer() {
             ))}
           </div>
           <div>
-            <h4>Talk to us</h4>
+            <p className="footer-h">Talk to us</p>
             <a href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phone}</a>
             <a href={`mailto:${site.email}`}>{site.email}</a>
             <a href={site.linkedin} target="_blank" rel="noopener noreferrer">

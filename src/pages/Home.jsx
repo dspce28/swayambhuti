@@ -13,7 +13,8 @@ import {
 import { Link } from 'react-router-dom'
 import { industries, painTicker, pains, pillars, services, stats, testimonials } from '../data/content'
 import Icon from '../components/Icon'
-import { Button, Counter, ease, Heading, Marquee, Reveal, rise, SplitText, Stagger, TiltCard } from '../components/motion'
+import { Button, Counter, Deferred, ease, Heading, Marquee, Reveal, rise, SplitText, Stagger, TiltCard } from '../components/motion'
+import { EngineGears } from '../components/Gears'
 import { FAQ, HealthTeaser, Impact, MeetSunil, ProcessPinned, ScarcityCTA, StackedTestimonials, ValuesQuad } from '../components/Premium'
 import { useSeo } from '../seo'
 
@@ -31,48 +32,85 @@ function Hero() {
   const contentO = useTransform(scrollYProgress, [0, 0.55], [1, 0])
   const canvasScale = useTransform(scrollYProgress, [0, 1], [1, 1.25])
 
+  // The 3D engine (three.js, ~250KB) loads only once the page has settled, so it never competes
+  // with the text a visitor reads first. Data-saver / slow connections skip it entirely.
+  const [show3D, setShow3D] = useState(false)
   useEffect(() => {
+    const conn = navigator.connection
+    if (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ''))) return
+    // start on first interaction, or after the page has been quiet for a moment — whichever comes first
+    let timer
+    const start = () => {
+      cleanup()
+      setShow3D(true)
+    }
+    // Never start on touch/scroll: the ~0.4s WebGL start-up would stutter the visitor's first scroll.
+    // Low-end phones keep the lightweight gear outline instead of WebGL.
+    const finePointer = window.matchMedia('(pointer: fine)').matches
+    // (Chrome reports a 6GB phone as 4GB, so the memory threshold is 2GB to keep mid-range phones in)
+    const lowEnd = !finePointer && ((navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 2)
+    if (lowEnd) return
+    const events = finePointer ? ['pointermove', 'pointerdown', 'keydown'] : []
+    const cleanup = () => {
+      clearTimeout(timer)
+      events.forEach((e) => window.removeEventListener(e, start))
+      window.removeEventListener('load', arm)
+    }
+    const arm = () => (timer = setTimeout(() => (window.requestIdleCallback || setTimeout)(start, { timeout: 1500 }), 2500))
+    events.forEach((e) => window.addEventListener(e, start, { once: true, passive: true }))
+    if (document.readyState === 'complete') arm()
+    else window.addEventListener('load', arm, { once: true })
+    return cleanup
+  }, [])
+  useEffect(() => {
+    if (!show3D) return
     if (reduced) {
       progress.set(1)
       return
     }
-    const c = animate(progress, 1, { duration: 3.2, ease: [0.65, 0, 0.35, 1], delay: 0.6 })
+    const c = animate(progress, 1, { duration: 3.2, ease: [0.65, 0, 0.35, 1], delay: 0.3 })
     return () => c.stop()
-  }, [progress, reduced])
+  }, [progress, reduced, show3D])
 
   return (
     <section className="hero" ref={ref}>
       <div className="hero-bg" />
       <motion.div className="hero-canvas" style={{ scale: canvasScale }}>
-        <Suspense fallback={null}>
-          <EngineCanvas progress={progress} speed={speed} reduced={!!reduced} className="canvas-fill" />
-        </Suspense>
+        <div className={`hero-placeholder ${show3D ? 'out' : ''}`} aria-hidden="true">
+          <EngineGears health={[0.9, 0.9, 0.9]} labels={false} still />
+        </div>
+        {show3D && (
+          <Suspense fallback={null}>
+            <EngineCanvas progress={progress} speed={speed} reduced={!!reduced} className="canvas-fill canvas-in" />
+          </Suspense>
+        )}
       </motion.div>
       <div className="hero-vignette" />
 
       <motion.div className="container hero-content" style={{ y: contentY, opacity: contentO }}>
-        <motion.div className="pill" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8, ease }}>
+        {/* visible in the very first paint: this is what a visitor reads while scripts load */}
+        <div className="pill">
           <span className="pulse" /> 20+ Years · 300,000+ Professionals Impacted
-        </motion.div>
+        </div>
         <h1 className="display">
-          <SplitText text="Fix your" delay={0.5} />
+          <SplitText text="Fix your" delay={0.05} />
           <br />
-          <SplitText text="business engine." delay={0.65} className="em" />
+          <SplitText text="business engine." delay={0.15} className="em" />
           <br />
-          <SplitText text="Build predictable growth." delay={0.8} className="display-sm" />
+          <SplitText text="Build predictable growth." delay={0.25} className="display-sm" />
         </h1>
-        <motion.p className="lead hero-lead" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2, duration: 0.9, ease }}>
+        <p className="lead hero-lead">
           We help SME owners move from reactive chaos to structured, scalable performance — eliminating operational inefficiencies, elevating customer
           experience, and building disciplined sales engines.
-        </motion.p>
-        <motion.div className="btn-row" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4, duration: 0.9, ease }}>
+        </p>
+        <div className="btn-row">
           <Button to="/contact" icon="calendar">
             Book Business Performance Audit
           </Button>
           <Button to="/services" variant="ghost">
             Explore Services
           </Button>
-        </motion.div>
+        </div>
       </motion.div>
 
       <motion.div className="hero-legend" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.4, duration: 1 }}>
@@ -86,26 +124,25 @@ function Hero() {
       </motion.div>
 
       <div className="hero-stats container">
-        {stats.slice(0, 4).map((s, i) => (
-          <motion.div key={s.label} className="hero-stat" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.6 + i * 0.1, duration: 0.8, ease }}>
+        {stats.slice(0, 4).map((s) => (
+          <div key={s.label} className="hero-stat">
             <strong>
               <Counter value={s.value} suffix={s.suffix} />
             </strong>
             <span>{s.label}</span>
-          </motion.div>
+          </div>
         ))}
       </div>
-
     </section>
   )
 }
 
 /* ================= PROBLEM: scroll-scrubbed quote ================= */
 function ScrubWord({ children, progress, range }) {
-  const opacity = useTransform(progress, range, [0.15, 1])
-  const color = useTransform(progress, range, ['#6b7f74', '#f6efe0'])
+  // dim state still meets 3:1 contrast for large text
+  const color = useTransform(progress, range, ['#587366', '#f6efe0'])
   return (
-    <motion.span style={{ opacity, color }} className="scrub-word">
+    <motion.span style={{ color }} className="scrub-word">
       {children}{' '}
     </motion.span>
   )
@@ -411,18 +448,11 @@ export default function Home() {
       <Hero />
       <Marquee items={painTicker} className="marquee-pain" />
       <Problem />
-      <HealthTeaser />
-      <MeetSunil />
-      <Services />
-      <EngineScroller />
-      <Impact />
-      <ProcessPinned />
-      <StatsBand />
-      <ValuesQuad dark />
-      <Industries />
-      <StackedTestimonials />
-      <FAQ />
-      <ScarcityCTA />
+      {[HealthTeaser, MeetSunil, Services, EngineScroller, Impact, ProcessPinned, StatsBand, ValuesQuad, Industries, StackedTestimonials, FAQ, ScarcityCTA].map((S, i) => (
+        <Deferred key={i}>
+          <S {...(S === ValuesQuad ? { dark: true } : {})} />
+        </Deferred>
+      ))}
     </>
   )
 }

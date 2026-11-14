@@ -6,6 +6,7 @@ import { EngineGears } from '../components/Gears'
 import { Button, Counter, ease } from '../components/motion'
 import Icon from '../components/Icon'
 import { track, whatsappLink } from '../lib/marketing'
+import { submitLead } from '../lib/leads'
 import { site } from '../data/content'
 import { useSeo } from '../seo'
 
@@ -89,12 +90,19 @@ function Results({ answers, onRetake }) {
   const r = useMemo(() => score(answers), [answers])
   const [form, setForm] = useState({ name: '', company: '', phone: '' })
   const [sent, setSent] = useState(false)
+  const [delivery, setDelivery] = useState('sending')
+  const [error, setError] = useState('')
+  const [startedAt] = useState(() => Date.now())
+  const [hp, setHp] = useState('')
   const [copied, setCopied] = useState(false)
+  const [wa, setWa] = useState('')
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/health-check?r=${encode(answers)}` : ''
 
-  const send = (e) => {
+  const send = async (e) => {
     e.preventDefault()
-    if (!form.name.trim() || form.phone.replace(/\D/g, '').length < 10) return
+    if (form.name.trim().length < 2) return setError('Please enter your name')
+    if (form.phone.replace(/\D/g, '').length < 10) return setError('Please enter a valid phone / WhatsApp number')
+    setError('')
     const lines = [
       `Hello Sunil, I just took the Business Engine Health Check.`,
       ``,
@@ -109,8 +117,22 @@ function Results({ answers, onRetake }) {
       `I'd like my personalised fix plan. Results: ${shareUrl}`,
     ]
     track('generate_lead', { source: 'health_check', score: r.total, tier: r.tier.name })
-    window.open(whatsappLink(lines), '_blank', 'noopener')
+    setWa(whatsappLink(lines))
     setSent(true)
+    setDelivery('sending')
+    const res = await submitLead({
+      type: 'health_check',
+      ...form,
+      website: hp,
+      startedAt,
+      score: { total: r.total, tier: r.tier.name, pillars: r.pillars, leaks: r.leaks.map((l) => l.leak), answers: encode(answers) },
+    })
+    if (res.state === 'invalid') {
+      setSent(false)
+      setError(res.error)
+      return
+    }
+    setDelivery(res.state)
   }
 
   const share = async () => {
@@ -205,8 +227,29 @@ function Results({ answers, onRetake }) {
         <AnimatePresence mode="wait">
           {sent ? (
             <motion.div key="ok" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hc-lead-ok">
-              <h3>WhatsApp is open with your results — just hit send.</h3>
-              <p className="lead">Sunil’s team replies within 24 hours to schedule your free 60-minute audit call.</p>
+              {delivery === 'sending' && <h3>Sending your results…</h3>}
+              {delivery === 'delivered' && (
+                <>
+                  <h3>Received — Sunil has your results.</h3>
+                  <p className="lead">His team will call you within 24 hours to schedule your free 60-minute audit, focused on these leaks.</p>
+                  <div className="btn-row">
+                    <Button href={wa} variant="ghost" icon="arrow">
+                      Message on WhatsApp
+                    </Button>
+                  </div>
+                </>
+              )}
+              {(delivery === 'unconfigured' || delivery === 'queued') && (
+                <>
+                  <h3>One tap left: send your results on WhatsApp.</h3>
+                  <p className="lead">Your score and leaks are already filled in. Sunil’s team replies within 24 hours.</p>
+                  <div className="btn-row">
+                    <Button href={wa} icon="arrow">
+                      Send on WhatsApp
+                    </Button>
+                  </div>
+                </>
+              )}
               <button className="text-link light" onClick={() => setSent(false)}>
                 Edit details
               </button>
@@ -217,11 +260,13 @@ function Results({ answers, onRetake }) {
                 Get your <span className="em">personalised fix plan</span> — free
               </h3>
               <p className="lead">Send these results to Sunil. You’ll get a 60-minute Business Performance Audit call focused on exactly these leaks. No charge, no obligation.</p>
+              <input className="hp" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={hp} onChange={(e) => setHp(e.target.value)} />
               <div className="hc-lead-row">
                 <input placeholder="Your name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required aria-label="Your name" />
                 <input placeholder="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} aria-label="Company" />
                 <input placeholder="Phone / WhatsApp *" type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required aria-label="Phone" />
               </div>
+              {error && <p className="hc-error" role="alert">{error}</p>}
               <Button type="submit" icon="arrow">
                 Send my results to Sunil
               </Button>

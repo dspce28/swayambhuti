@@ -49,9 +49,33 @@ npm run preview  # serve the build
 `npm run build` and upload `dist/` to the web root. `public/.htaccess` (Apache/LiteSpeed, e.g. Hostinger) and
 `vercel.json` route every path to `index.html` so client-side routes like `/engine` work on refresh.
 
+## Lead capture
+
+Every enquiry (contact form and Health Check) is POSTed to `api/lead.js`, a Vercel serverless function that
+validates it, filters bots (hidden honeypot field, minimum fill time, rate limit) and forwards it to whichever
+destinations are configured in **Vercel → Settings → Environment Variables**:
+
+| Variable | Purpose |
+| --- | --- |
+| `LEAD_WEBHOOK_URL` | Google Sheet (via `integrations/google-sheets-lead-webhook.gs`), or a Zapier/Make webhook |
+| `LEAD_WEBHOOK_SECRET` | Shared secret the Apps Script checks |
+| `RESEND_API_KEY` + `LEAD_NOTIFY_EMAIL` | Email notification via resend.com (`LEAD_FROM_EMAIL` optional) |
+
+- Stored → the visitor sees "Received"; WhatsApp is offered as an optional extra.
+- No destination configured, or delivery failed → the visitor gets a one-tap pre-filled WhatsApp button, and the
+  lead is queued in their browser and retried on their next visit. Nothing fails silently.
+- Campaign attribution (UTM, gclid, fbclid, landing page) travels with every lead.
+- `npm test` runs the endpoint tests.
+
+## Performance
+
+- Fonts are self-hosted (latin subset) and preloaded; no third-party request blocks first paint.
+- The hero text is visible in the first paint (no preloader, no page curtain on first arrival).
+- three.js loads only after the page is idle (desktop: or on first mouse move); low-end phones keep a lightweight
+  SVG gear outline. Below-the-fold home sections mount progressively; off-screen animations pause.
+- Inner pages are split from the home bundle and preloaded before the first render.
+
 ## Known gaps
 
-- **Contact form has no backend.** It validates, then opens WhatsApp with the enquiry pre-filled (email fallback offered).
-  To capture leads silently, wire `submit` in `src/pages/Pages.jsx` to a form service (Formspree, Web3Forms) or your CRM.
 - Blog cards have no article pages yet.
 - Accessibility: `prefers-reduced-motion` freezes the 3D scene, smooth scroll and decorative animation.

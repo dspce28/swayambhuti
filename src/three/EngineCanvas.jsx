@@ -9,7 +9,7 @@ export default function EngineCanvas({ className, ...props }) {
   const narrow = typeof window !== 'undefined' && window.innerWidth < 760
   const lowPower =
     typeof navigator !== 'undefined' && ((navigator.hardwareConcurrency || 8) <= 4 || navigator.deviceMemory <= 4)
-  const count = narrow || lowPower ? 3800 : 9000
+  const count = narrow ? 2600 : lowPower ? 4000 : 9000
 
   // stop rendering when off-screen — saves battery on the phones most SME owners use
   useEffect(() => {

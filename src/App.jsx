@@ -1,11 +1,12 @@
+import { Suspense, useEffect } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { Cursor, Footer, Nav, PageTransition, Preloader, ScrollProgress, ScrollToTop, SmoothScroll, WhatsAppFloat } from './components/Layout'
-import { useEffect } from 'react'
-import Home from './pages/Home'
-import HealthCheck from './pages/HealthCheck'
+import { Cursor, Footer, Nav, PageTransition, ScrollProgress, ScrollToTop, SmoothScroll, WhatsAppFloat } from './components/Layout'
 import { captureAttribution, loadTags } from './lib/marketing'
-import { About, Blog, CaseStudies, Contact, Engine, Industries, NotFound, Services, TestimonialsPage, Training } from './pages/Pages'
+import { flushLeadQueue } from './lib/leads'
+import { pages } from '@pages'
+
+const { Home, HealthCheck, About, Blog, CaseStudies, Contact, Engine, Industries, NotFound, Services, TestimonialsPage, Training } = pages
 
 const routes = [
   ['/', Home],
@@ -27,22 +28,24 @@ export default function App() {
   useEffect(() => {
     captureAttribution()
     loadTags()
+    flushLeadQueue()
   }, [])
   return (
     <>
       <SmoothScroll />
-      <Preloader />
       <Cursor />
       <ScrollProgress />
       <Nav />
       <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
         <main key={location.pathname}>
           <ScrollToTop />
-          <Routes location={location}>
-            {routes.map(([path, C]) => (
-              <Route key={path} path={path} element={<PageTransition><C /></PageTransition>} />
-            ))}
-          </Routes>
+          <Suspense fallback={<div className="route-loading" />}>
+            <Routes location={location}>
+              {routes.map(([path, C]) => (
+                <Route key={path} path={path} element={<PageTransition><C /></PageTransition>} />
+              ))}
+            </Routes>
+          </Suspense>
         </main>
       </AnimatePresence>
       <Footer />

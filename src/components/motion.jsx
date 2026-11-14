@@ -63,8 +63,8 @@ export function SplitText({ text, className, delay = 0, as = 'span', italicWords
       whileInView="show"
       viewport={{ once: true }}
       transition={{ staggerChildren: 0.06, delayChildren: delay }}
-      aria-label={text}
     >
+      <span className="sr-only">{text}</span>
       {words.map((w, i) => (
         <span key={i} className="split-mask" aria-hidden="true">
           <motion.span
@@ -189,9 +189,11 @@ export function Marquee({ items, baseVelocity = -2, className }) {
   const dir = useRef(1)
   const reduced = useReducedMotion()
   const wrapped = useTransform(x, (v) => `${((((v % 50) + 50) % 50) - 50).toFixed(3)}%`)
+  const box = useRef(null)
+  const onScreen = useInView(box, { margin: '100px' }) // no per-frame work while off-screen
 
   useAnimationFrame((_, delta) => {
-    if (reduced) return
+    if (reduced || !onScreen) return
     let move = dir.current * baseVelocity * (delta / 1000)
     const f = factor.get()
     if (f < 0) dir.current = -1
@@ -201,7 +203,7 @@ export function Marquee({ items, baseVelocity = -2, className }) {
   })
 
   return (
-    <div className={`marquee ${className || ''}`}>
+    <div ref={box} className={`marquee ${className || ''}`}>
       <motion.div className="marquee-track" style={{ x: wrapped, skewX: skew }}>
         {[0, 1].map((k) => (
           <div className="marquee-group" key={k} aria-hidden={k === 1}>
@@ -244,4 +246,38 @@ export function Heading({ eyebrow, title, em, sub, light, center }) {
       )}
     </div>
   )
+}
+
+/* ---------- Deferred: mount below-the-fold sections one per idle slot ----------
+   The server render includes everything (SEO); in the browser the first paint only builds what is on
+   screen, then the rest is added in small idle-time steps instead of one long main-thread task. */
+const queue = []
+let pumping = false
+const idle = (f) => (typeof window !== 'undefined' && window.requestIdleCallback ? window.requestIdleCallback(f, { timeout: 600 }) : setTimeout(f, 60))
+function pump() {
+  if (pumping) return
+  pumping = true
+  const step = () => {
+    const next = queue.shift()
+    if (!next) {
+      pumping = false
+      return
+    }
+    next()
+    idle(step)
+  }
+  idle(step)
+}
+export function Deferred({ children, minHeight = '60vh' }) {
+  const [ready, setReady] = useState(() => typeof window === 'undefined')
+  useEffect(() => {
+    if (ready) return
+    let alive = true
+    queue.push(() => alive && setReady(true))
+    pump()
+    return () => {
+      alive = false
+    }
+  }, [ready])
+  return ready ? children : <div style={{ minHeight }} aria-hidden="true" />
 }

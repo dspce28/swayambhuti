@@ -89,9 +89,10 @@ export function Gear({ cx, cy, teeth, r, color, health = 1, dir = 1, phase = 0, 
 }
 
 // The three-pillar engine used by the health check.
-export function EngineGears({ health = [1, 1, 1], labels = true, values }) {
+export function EngineGears({ health = [1, 1, 1], labels = true, values, still = false }) {
   const ref = useRef(null)
-  const running = useInView(ref, { margin: '80px' })
+  const inView = useInView(ref, { margin: '80px' })
+  const running = inView && !still
   return (
     <svg ref={ref} viewBox="0 0 520 440" className="engine-gears" role="img" aria-label="Business engine: Systemize, Humanize and Monetize gears">
       <defs>
