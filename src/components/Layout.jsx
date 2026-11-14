@@ -4,7 +4,9 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import Lenis from 'lenis'
 import { nav, site, services } from '../data/content'
 import Icon from './Icon'
-import { Button, ease, Magnetic, Reveal, SplitText } from './motion'
+import { ease, Magnetic, SplitText } from './motion'
+import { ScarcityCTA } from './Premium'
+import { track } from '../lib/marketing'
 
 /* ---------- Smooth scroll (Lenis) ---------- */
 export let lenis = null
@@ -185,7 +187,7 @@ export function Nav() {
     <>
       <motion.header
         className={`nav ${scrolled ? 'is-scrolled' : ''}`}
-        animate={{ y: hidden ? '-110%' : '0%' }}
+        animate={hidden ? { y: '-110%', transitionEnd: { visibility: 'hidden' } } : { y: '0%', visibility: 'visible' }}
         transition={{ duration: 0.45, ease }}
       >
         <Link to="/" className="nav-logo" data-cursor="hover">
@@ -208,8 +210,11 @@ export function Nav() {
           ))}
         </nav>
         <div className="nav-right">
+          <Link to="/health-check" className="nav-hc" data-cursor="hover" onClick={() => track('cta_click', { cta: 'nav_health_check' })}>
+            <span className="pulse" /> Free Health Check
+          </Link>
           <Magnetic>
-            <Link to="/contact" className="nav-cta" data-cursor="hover">
+            <Link to="/contact" className="nav-cta" data-cursor="hover" onClick={() => track('cta_click', { cta: 'nav_book_audit' })}>
               Book Audit <Icon name="arrow" size={16} stroke={2} />
             </Link>
           </Magnetic>
@@ -230,7 +235,7 @@ export function Nav() {
             transition={{ duration: 0.8, ease }}
           >
             <nav className="menu-links">
-              {[...nav, { to: '/contact', label: 'Contact' }].map((n, i) => (
+              {[...nav, { to: '/health-check', label: 'Free Health Check' }, { to: '/contact', label: 'Contact' }].map((n, i) => (
                 <motion.div key={n.to} initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 + i * 0.045, duration: 0.7, ease }}>
                   <NavLink to={n.to} className={({ isActive }) => (isActive ? 'active' : '')}>
                     <span className="menu-num">{String(i + 1).padStart(2, '0')}</span>
@@ -250,29 +255,9 @@ export function Nav() {
   )
 }
 
-/* ---------- CTA band ---------- */
-export function CTA({ title = 'Ready to fix your', em = 'business engine?', sub = 'Book a complimentary Business Performance Audit — identify exactly where your business is losing momentum and what to do about it.' }) {
-  return (
-    <section className="cta">
-      <div className="cta-glow" />
-      <div className="container cta-inner">
-        <h2 className="h1">
-          <SplitText text={title} /> <SplitText text={em} className="em" delay={0.2} />
-        </h2>
-        <Reveal as="p" className="lead" delay={0.3}>
-          {sub}
-        </Reveal>
-        <Reveal className="btn-row center" delay={0.4}>
-          <Button to="/contact" icon="calendar">
-            Book Free Audit Session
-          </Button>
-          <Button href={`https://wa.me/${site.phoneRaw}`} variant="ghost">
-            Chat on WhatsApp
-          </Button>
-        </Reveal>
-      </div>
-    </section>
-  )
+/* ---------- CTA band (inner pages) ---------- */
+export function CTA({ title = 'Fix your engine.', em = 'Start with sixty minutes.' }) {
+  return <ScarcityCTA title={title} em={em} />
 }
 
 /* ---------- Footer ---------- */

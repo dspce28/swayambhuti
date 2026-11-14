@@ -43,7 +43,7 @@ export default function Icon({ name, size = 24, stroke = 1.6, className, fill })
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d={paths[name] || paths.arrow} />
+      <path d={paths[name] || paths.arrow} pathLength="1" />
     </svg>
   )
 }

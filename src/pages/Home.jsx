@@ -14,7 +14,8 @@ import { Link } from 'react-router-dom'
 import { industries, painTicker, pains, pillars, services, stats, testimonials } from '../data/content'
 import Icon from '../components/Icon'
 import { Button, Counter, ease, Heading, Marquee, Reveal, rise, SplitText, Stagger, TiltCard } from '../components/motion'
-import { CTA } from '../components/Layout'
+import { FAQ, HealthTeaser, Impact, MeetSunil, ProcessPinned, ScarcityCTA, StackedTestimonials, ValuesQuad } from '../components/Premium'
+import { useSeo } from '../seo'
 
 const EngineCanvas = lazy(() => import('../three/EngineCanvas'))
 
@@ -405,18 +406,24 @@ export function Testimonials({ items = testimonials.slice(0, 4) }) {
 }
 
 export default function Home() {
+  useSeo('/')
   return (
     <>
       <Hero />
       <Marquee items={painTicker} className="marquee-pain" />
       <Problem />
-      <Founder />
+      <HealthTeaser />
+      <MeetSunil />
       <Services />
       <EngineScroller />
+      <Impact />
+      <ProcessPinned />
       <StatsBand />
+      <ValuesQuad dark />
       <Industries />
-      <Testimonials />
-      <CTA />
+      <StackedTestimonials />
+      <FAQ />
+      <ScarcityCTA />
     </>
   )
 }

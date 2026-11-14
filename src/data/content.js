@@ -186,3 +186,34 @@ export const posts = [
   { cat: 'Customer Experience', title: 'The Customer Journey Audit: 7 Questions That Reveal Everything', excerpt: "Most businesses have a customer experience gap they don't know exists. These 7 diagnostic questions expose it immediately.", date: 'November 2024', read: '9 min' },
   { cat: 'Finance & Growth', title: 'Predictable Revenue: What It Is, Why It Matters, How to Build It', excerpt: "Unpredictable revenue is the most stressful aspect of running an SME. Here's how to architect a business that generates consistent monthly income.", date: 'October 2024', read: '11 min' },
 ]
+
+// ⚠️ Scarcity line used in the final CTA. It must be TRUE — confirm the number with Sunil before launch.
+export const availability = 'Accepting 5 new SME engagements — Q1 2027'
+
+// "How the work runs" — the engagement path (pinned section on Home).
+export const process = [
+  { n: '01', title: 'Diagnose', scene: 'diagnose', text: 'A Business Performance Audit across operations, people, sales and numbers. You get an honest map of where the engine is broken — and what it costs you each month.' },
+  { n: '02', title: 'Systemize', scene: 'systemize', text: 'We document and install the 5–8 processes your business can’t run without, plus a weekly KPI dashboard. The business stops depending on your memory.' },
+  { n: '03', title: 'Humanize', scene: 'humanize', text: 'We build the management layer, culture rituals and customer journey so your people own outcomes — and customers come back and refer.' },
+  { n: '04', title: 'Monetize', scene: 'monetize', text: 'With the engine stable, we switch on the revenue levers: a forecastable sales system, structured referrals and pricing that protects margin.' },
+]
+
+// "Measure what moves you" — illustrative mini-charts (not client data).
+export const impact = [
+  { chart: 'bars', title: 'Owner hours released', text: 'Track the hours you get back as decisions move to systems and managers.' },
+  { chart: 'line', title: 'Revenue predictability', text: 'Narrow the gap between forecast and actual, month after month.' },
+  { chart: 'donut', title: 'Process coverage', text: 'See how much of the business runs on documented, trained SOPs.' },
+  { chart: 'dots', title: 'Team alignment', text: 'Connect every role to weekly targets and clear accountability.' },
+]
+
+// FAQ — written answer-first for search snippets and AI answer engines (AEO / GEO).
+export const faqs = [
+  { q: 'What does an SME business transformation consultant do?', a: 'An SME business transformation consultant diagnoses why a small or mid-sized business depends on its owner, then installs the systems, management layer and sales process that let it grow predictably. Swayambhuti does this through the SME Performance Engine™: Systemize, Humanize, Monetize.' },
+  { q: 'What is the SME Performance Engine™?', a: 'The SME Performance Engine™ is Swayambhuti’s three-pillar framework. SYSTEMIZE builds SOPs, KPIs and delegation; HUMANIZE develops leaders, culture and customer experience; MONETIZE installs a forecastable sales system, referrals and pricing discipline. It has been applied across 150+ Indian SMEs.' },
+  { q: 'How do I reduce owner dependency in my business?', a: 'Reduce owner dependency in three moves: document the 5–8 critical processes as SOPs, define decision rights so managers decide without escalating, and run the business on a weekly KPI dashboard instead of daily check-ins. Swayambhuti clients typically target a 70% reduction in owner involvement within 90 days.' },
+  { q: 'How long does a business transformation engagement take?', a: 'Most engagements show measurable change within 90 days and run 4–8 months in total. The published case studies saw 40% revenue growth in 6 months (manufacturing), 55% better conversion in 4 months (retail) and 62% admissions growth in 8 months (education).' },
+  { q: 'What is a Business Performance Audit and is it really free?', a: 'It is a structured 60-minute call with Sunil Anandani that reviews operations, people, sales and numbers to find your biggest leverage points. It is free and carries no obligation. You can start with the 3-minute online Business Engine Health Check.' },
+  { q: 'Which industries does Swayambhuti work with?', a: 'Manufacturing, retail and FMCG, healthcare and wellness, education and EdTech, construction and real estate, professional services, hospitality and F&B, and technology/SaaS — SMEs across India.' },
+  { q: 'Do you work only in one city?', a: 'No. Swayambhuti serves SMEs across India, with client work in cities including Pune, Ahmedabad and Mumbai. Engagements combine on-site workshops with remote follow-through.' },
+  { q: 'Who is Sunil Anandani?', a: 'Sunil Anandani is the founder and chief consultant of Swayambhuti Consultants — an SME business transformation specialist with 20+ years of experience, 150+ businesses transformed and 300,000+ professionals impacted through consulting and training.' },
+]

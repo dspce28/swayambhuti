@@ -1,10 +1,12 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform } from 'motion/react'
-import { cases, industries, pillars, posts, services, site, stats, testimonials, trainings, values } from '../data/content'
+import { cases, industries, pillars, posts, services, site, stats, testimonials, trainings } from '../data/content'
 import Icon from '../components/Icon'
 import { Button, Counter, ease, Heading, Reveal, rise, SplitText, Stagger, TiltCard } from '../components/motion'
 import { CTA } from '../components/Layout'
-import { Testimonials as TestiCarousel } from './Home'
+import { FAQ, StackedTestimonials, ValuesQuad } from '../components/Premium'
+import { useSeo } from '../seo'
+import { faqs } from '../data/content'
 
 const EngineCanvas = lazy(() => import('../three/EngineCanvas'))
 
@@ -42,6 +44,7 @@ function PageHero({ eyebrow, title, em, sub }) {
 
 /* ================= ABOUT ================= */
 export function About() {
+  useSeo('/about')
   return (
     <>
       <PageHero
@@ -87,20 +90,7 @@ export function About() {
           </div>
         </div>
       </section>
-      <section className="section dark">
-        <div className="container">
-          <Heading eyebrow="Our core values" title="What we" em="stand for" light />
-          <Stagger className="values-grid">
-            {values.map((v, i) => (
-              <motion.div variants={rise} className="value" key={v.name}>
-                <span className="value-num">0{i + 1}</span>
-                <h3>{v.name}</h3>
-                <p>{v.text}</p>
-              </motion.div>
-            ))}
-          </Stagger>
-        </div>
-      </section>
+      <ValuesQuad dark />
       <CTA title="Start your" em="transformation." sub="Book a free Business Performance Audit with Sunil to identify your biggest leverage points." />
     </>
   )
@@ -108,6 +98,7 @@ export function About() {
 
 /* ================= SERVICES ================= */
 export function Services() {
+  useSeo('/services')
   return (
     <>
       <PageHero
@@ -176,6 +167,7 @@ function PillarBlock({ p, i, onActive }) {
 }
 
 export function Engine() {
+  useSeo('/engine')
   const [active, setActive] = useState(-1)
   const reduced = useReducedMotion()
   return (
@@ -212,6 +204,7 @@ export function Engine() {
 
 /* ================= INDUSTRIES ================= */
 export function Industries() {
+  useSeo('/industries')
   return (
     <>
       <PageHero
@@ -289,6 +282,7 @@ function CaseCard({ c, i }) {
 }
 
 export function CaseStudies() {
+  useSeo('/case-studies')
   return (
     <>
       <PageHero eyebrow="Proven results" title="Transformation" em="case studies." sub="Real businesses. Real problems. Measurable results delivered through the SME Performance Engine™." />
@@ -308,6 +302,7 @@ export function CaseStudies() {
 
 /* ================= TRAINING ================= */
 export function Training() {
+  useSeo('/training')
   return (
     <>
       <PageHero eyebrow="Workshops & programs" title="Training &" em="development." sub="High-impact workshops for SME owners, leadership teams, and sales professionals ready to perform at the next level." />
@@ -336,10 +331,11 @@ export function Training() {
 
 /* ================= TESTIMONIALS ================= */
 export function TestimonialsPage() {
+  useSeo('/testimonials')
   return (
     <>
       <PageHero eyebrow="Client voices" title="What our clients" em="say." sub="Feedback from SME owners and leadership teams who have been through the transformation journey with Sunil Anandani." />
-      <TestiCarousel items={testimonials} />
+      <StackedTestimonials items={testimonials} />
       <section className="section tight">
         <Stagger className="container testi-grid">
           {testimonials.map((t) => (
@@ -366,6 +362,7 @@ export function TestimonialsPage() {
 
 /* ================= BLOG ================= */
 export function Blog() {
+  useSeo('/blog')
   return (
     <>
       <PageHero eyebrow="Insights & ideas" title="Business growth" em="blog." sub="Practical insights on SME transformation, operational excellence, sales performance, and leadership — from 20+ years of front-line experience." />
@@ -397,6 +394,7 @@ export function Blog() {
 const industryOptions = ['Manufacturing', 'Retail & FMCG', 'Healthcare', 'Education', 'Construction & Real Estate', 'Technology', 'Hospitality', 'Professional Services', 'Other']
 
 export function Contact() {
+  useSeo('/contact')
   const [form, setForm] = useState({ name: '', company: '', email: '', phone: '', industry: '', challenge: '' })
   const [errors, setErrors] = useState({})
   const [sent, setSent] = useState(false)
@@ -541,6 +539,7 @@ export function Contact() {
           </Reveal>
         </div>
       </section>
+      <FAQ items={faqs} />
     </>
   )
 }

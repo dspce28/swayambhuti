@@ -85,7 +85,8 @@ export function Counter({ value, suffix = '', duration = 2 }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-40px' })
   const reduced = useReducedMotion()
-  const [n, setN] = useState(reduced ? value : 0)
+  // server render shows the real number (what crawlers read); the browser counts up from 0
+  const [n, setN] = useState(() => (reduced || typeof window === 'undefined' ? value : 0))
   useEffect(() => {
     if (!inView || reduced) return
     const c = animate(0, value, { duration, ease, onUpdate: (v) => setN(Math.round(v)) })
