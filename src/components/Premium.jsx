@@ -261,9 +261,11 @@ export function ValuesQuad({ dark }) {
    In their words — stacked sticky cards (Helena-style)
    ========================================================= */
 function StackCard({ t, i, total, progress }) {
-  const start = i / total
-  const scale = useTransform(progress, [start, 1], [1, 1 - (total - i) * 0.04])
-  const dim = useTransform(progress, [start, Math.min(1, start + 1 / total)], [0, i === total - 1 ? 0 : 0.82])
+  // a card stays crisp while it is being read; it only recedes once the next card slides over it
+  const covered = Math.min(1, (i + 0.75) / total)
+  const scale = useTransform(progress, [covered, 1], [1, 1 - (total - 1 - i) * 0.035])
+  const narrow = typeof window !== 'undefined' && window.innerWidth <= 900 // phones: cards read in sequence, never dim
+  const dim = useTransform(progress, [covered, Math.min(1, (i + 1.15) / total)], [0, i === total - 1 || narrow ? 0 : 0.82])
   return (
     <div className="stack-slot" style={{ top: `calc(110px + ${i * 22}px)` }}>
       <motion.figure className={`stack-card ${i % 2 ? 'dark' : ''}`} style={{ scale }}>

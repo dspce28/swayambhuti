@@ -281,6 +281,9 @@ function EngineScroller() {
             <div className="engine-bar">
               <motion.i style={{ scaleX: bar }} />
             </div>
+            <Link to="/engine" className="text-link light engine-link" data-cursor="hover">
+              Full framework <Icon name="arrow" size={16} />
+            </Link>
           </div>
         </div>
         <motion.div className="engine-track" style={{ x }}>
@@ -304,11 +307,6 @@ function EngineScroller() {
             </article>
           ))}
         </motion.div>
-        <div className="container">
-          <Link to="/engine" className="text-link light" data-cursor="hover">
-            Explore the full engine framework <Icon name="arrow" size={16} />
-          </Link>
-        </div>
       </div>
     </section>
   )
