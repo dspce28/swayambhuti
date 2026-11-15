@@ -44,6 +44,74 @@ function PageHero({ eyebrow, title, em, sub }) {
   )
 }
 
+
+/* ---------- About: layered photo collage (parallax at three depths) ---------- */
+function AboutCollage() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const reduced = useReducedMotion()
+  const yBack = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [60, -60])
+  const yMain = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [30, -30])
+  const yFront = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [110, -110])
+  const imgZoom = useTransform(scrollYProgress, [0, 1], [1.12, 1])
+  // one trigger for the whole collage: per-photo triggers were unreliable on phones
+  const shown = useInView(ref, { once: true, amount: 0.2 })
+  const reveal = (d) => ({
+    initial: { clipPath: 'inset(100% 0 0 0 round 24px)' },
+    animate: shown ? { clipPath: 'inset(0% 0 0 0 round 24px)' } : undefined,
+    transition: { duration: 1.2, ease, delay: d },
+  })
+  return (
+    <div className="collage" ref={ref}>
+      <motion.figure className="collage-back" style={{ y: yBack }} {...reveal(0.25)}>
+        <img src="/img/about/stage.webp" alt="Sunil Anandani delivering a keynote" width="620" height="1051" loading="lazy" />
+      </motion.figure>
+      <motion.figure className="collage-main" style={{ y: yMain }} {...reveal(0)}>
+        <motion.img src="/img/about/speaking.webp" alt="Sunil Anandani speaking at a business network meet" width="724" height="1000" loading="lazy" style={{ scale: imgZoom }} />
+      </motion.figure>
+      <motion.figure className="collage-front" style={{ y: yFront }} {...reveal(0.45)}>
+        <img src="/img/about/forum.webp" alt="Sunil Anandani at a business forum" width="640" height="724" loading="lazy" />
+      </motion.figure>
+      <motion.div className="collage-badge" style={{ y: yFront }} initial={{ opacity: 0, scale: 0.8 }} animate={shown ? { opacity: 1, scale: 1 } : undefined} transition={{ delay: 0.9, type: 'spring', stiffness: 180, damping: 16 }}>
+        <strong>
+          <Counter value={20} suffix="+" />
+        </strong>
+        <span>years inside Indian SMEs</span>
+      </motion.div>
+    </div>
+  )
+}
+
+/* ---------- About: Sunil at work ---------- */
+const atWork = [
+  { src: '/img/about/facilitate.webp', w: 760, h: 647, title: 'Facilitating', text: 'Working sessions where teams map their own processes — not slides read aloud.' },
+  { src: '/img/about/screen.webp', w: 700, h: 817, title: 'Presenting', text: 'Frameworks made concrete, with the numbers and examples from your industry.' },
+  { src: '/img/about/desk.webp', w: 700, h: 799, title: 'Between sessions', text: 'Follow-through with owners and managers until the systems actually run.' },
+]
+function AtWork() {
+  return (
+    <section className="section at-work">
+      <div className="container">
+        <Heading eyebrow="At work" title="Embedded with your team," em="not presenting at it." />
+        <Stagger className="at-work-grid">
+          {atWork.map((a, i) => (
+            <motion.figure variants={rise} className={`at-work-card ${i === 1 ? 'mid' : ''}`} key={a.src}>
+              <div className="at-work-img">
+                <img src={a.src} alt={`Sunil Anandani — ${a.title.toLowerCase()}`} width={a.w} height={a.h} loading="lazy" />
+              </div>
+              <figcaption>
+                <span className="at-work-num">0{i + 1}</span>
+                <strong>{a.title}</strong>
+                <span>{a.text}</span>
+              </figcaption>
+            </motion.figure>
+          ))}
+        </Stagger>
+      </div>
+    </section>
+  )
+}
+
 /* ================= ABOUT ================= */
 export function About() {
   useSeo('/about')
@@ -57,11 +125,7 @@ export function About() {
       />
       <section className="section">
         <div className="container founder-grid">
-          <div className="portrait-wrap">
-            <motion.div className="portrait" initial={{ clipPath: 'inset(0 100% 0 0 round 28px)' }} whileInView={{ clipPath: 'inset(0 0% 0 0 round 28px)' }} viewport={{ once: true }} transition={{ duration: 1.4, ease }}>
-              <img src="/img/sunil.webp" alt="Sunil Anandani" loading="lazy" />
-            </motion.div>
-          </div>
+          <AboutCollage />
           <div className="prose">
             <Heading eyebrow="Founder" title="Sunil" em="Anandani" sub="SME Business Transformation Specialist" />
             <Reveal as="p">
@@ -92,6 +156,7 @@ export function About() {
           </div>
         </div>
       </section>
+      <AtWork />
       <ValuesQuad dark />
       <CTA title="Start your" em="transformation." sub="Book a free Business Performance Audit with Sunil to identify your biggest leverage points." />
     </>
