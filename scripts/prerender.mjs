@@ -7,12 +7,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const dist = path.join(root, 'dist')
 const ssr = await import(pathToFileURL(path.join(root, 'dist-ssr', 'entry-server.js')).href)
-const { render, headTags, routes, SITE_URL, faqs, services, pillars, cases, industries, site, statsLine } = ssr
+const { render, headFor, headTags, pagePaths, articles, routes, SITE_URL, faqs, services, pillars, cases, industries, site, statsLine } = ssr
 
 const template = fs.readFileSync(path.join(dist, 'index.html'), 'utf8')
 const today = new Date().toISOString().slice(0, 10)
 
-for (const route of Object.keys(routes)) {
+for (const route of pagePaths) {
   let appHtml = ''
   try {
     appHtml = render(route)
@@ -20,9 +20,10 @@ for (const route of Object.keys(routes)) {
     console.warn(`[prerender] ${route}: render failed, shipping empty shell —`, e.message)
   }
   const html = template
-    .replace(/<!--seo-->[\s\S]*?<!--\/seo-->/, headTags(route))
+    .replace(/<!--seo-->[\s\S]*?<!--\/seo-->/, headFor(route))
     .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`)
   const file = route === '/' ? 'index.html' : `${route.slice(1)}.html`
+  fs.mkdirSync(path.dirname(path.join(dist, file)), { recursive: true })
   fs.writeFileSync(path.join(dist, file), html)
   console.log(`[prerender] ${route} → ${file} (${(html.length / 1024).toFixed(0)} KB)`)
 }
@@ -30,12 +31,16 @@ for (const route of Object.keys(routes)) {
 // 404 page keeps the SPA shell
 fs.writeFileSync(path.join(dist, '404.html'), template.replace(/<!--seo-->[\s\S]*?<!--\/seo-->/, headTags('/')))
 
-// sitemap.xml
+// sitemap.xml — drafts (only built in preview mode) are never listed
 const prio = (r) => (r === '/' ? '1.0' : ['/health-check', '/services', '/engine', '/contact'].includes(r) ? '0.9' : '0.7')
+const sitemapEntries = [
+  ...Object.keys(routes).map((r) => ({ loc: r, lastmod: today, priority: prio(r) })),
+  ...articles.filter((a) => !a.draft).map((a) => ({ loc: a.path, lastmod: a.updated || a.date, priority: '0.6' })),
+]
 fs.writeFileSync(
   path.join(dist, 'sitemap.xml'),
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${Object.keys(routes)
-    .map((r) => `  <url><loc>${SITE_URL}${r === '/' ? '/' : r}</loc><lastmod>${today}</lastmod><priority>${prio(r)}</priority></url>`)
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries
+    .map((e) => `  <url><loc>${SITE_URL}${e.loc === '/' ? '/' : e.loc}</loc><lastmod>${e.lastmod}</lastmod><priority>${e.priority}</priority></url>`)
     .join('\n')}\n</urlset>\n`,
 )
 
@@ -78,7 +83,10 @@ ${faqs.map((f) => `### ${f.q}\n${f.a}`).join('\n\n')}
 ${Object.entries(routes)
   .map(([r, m]) => `- [${m.title}](${SITE_URL}${r === '/' ? '/' : r}): ${m.description}`)
   .join('\n')}
-`
+${(() => {
+  const live = articles.filter((x) => !x.draft)
+  return live.length ? `\n## Articles\n${live.map((x) => `- [${x.title}](${SITE_URL}${x.path}) (${x.date}): ${x.description}`).join('\n')}\n` : ''
+})()}`
 fs.writeFileSync(path.join(dist, 'llms.txt'), llms)
 fs.rmSync(path.join(root, 'dist-ssr'), { recursive: true, force: true })
 console.log('[prerender] sitemap.xml, robots.txt, llms.txt written')

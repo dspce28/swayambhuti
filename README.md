@@ -13,7 +13,8 @@ npm run preview  # serve the build
 
 | Path | What |
 | --- | --- |
-| `src/data/content.js` | **All site copy** — services, case studies, testimonials, blog, contact details. Edit text here. |
+| `src/data/content.js` | **All site copy** — services, case studies, testimonials, contact details. Edit text here. |
+| `content/blog/*.md` | **Blog articles** — one Markdown file per article (see Blog below). |
 | `src/three/GearField.jsx` | The hero 3D scene: particles assemble from chaos into three meshing gears (Systemize / Humanize / Monetize). |
 | `src/three/EngineCanvas.jsx` | Lazy-loaded canvas wrapper; lowers particle count on phones / low-memory devices and pauses when off-screen. |
 | `src/components/motion.jsx` | Animation primitives: split-text reveals, counters, magnetic buttons, tilt cards, velocity marquee. |
@@ -43,6 +44,37 @@ npm run preview  # serve the build
 - Events pushed to `dataLayer`: `cta_click`, `health_check_start`, `health_check_complete`, `health_check_share`, `generate_lead`.
 - UTM parameters and click IDs (`gclid`, `fbclid`) are stored on landing and appended to WhatsApp leads, so every
   enquiry shows which campaign it came from.
+
+## Blog
+
+Each article is one file: `content/blog/<url-slug>.md` → published at `/blog/<url-slug>`.
+
+```markdown
+---
+title: The 5 SOPs Every SME Must Document Before Scaling
+description: One or two sentences — the card excerpt, meta description and social preview.
+date: 2026-11-15
+category: Operations
+tags: SOPs, scaling, owner dependency
+status: draft
+cover: /img/blog/sops.webp
+coverAlt: Process map on a flipchart
+---
+
+Article body in Markdown. Use ## for section headings.
+```
+
+- **Only `status: published` goes live.** A missing status counts as draft. A future `date` stays hidden until a
+  build on or after that day.
+- **Approval:** drafts are visible in `npm run dev` and in any build with `VITE_SHOW_DRAFTS=1`. Set that variable on
+  Vercel for the **Preview** environment only. Push a draft on a branch, send the client the preview URL, and when
+  approved change `status` to `published` on `main`. Draft pages carry `noindex` and are never in the sitemap.
+- A malformed article (missing title/description/date, invalid date, bad file name) **fails the build** with a
+  message naming the file, so the last good version stays live.
+- Raw HTML in articles is shown as text and unsafe links are dropped. Articles may be machine-written.
+- Each article gets its own title, description, canonical, Open Graph `article` tags, BlogPosting + breadcrumb
+  JSON-LD, a sitemap entry and a line in `llms.txt`.
+- `npm test` checks every file in `content/blog` parses.
 
 ## Deploying
 

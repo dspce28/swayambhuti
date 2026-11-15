@@ -1,7 +1,7 @@
 // SEO / AEO / GEO — one source of truth for every route's metadata and structured data.
 // Used at runtime (useSeo) and at build time (scripts/prerender.mjs writes it into static HTML).
 import { useEffect } from 'react'
-import { cases, faqs, industries, posts, services, site, stats } from './data/content'
+import { cases, faqs, industries, services, site, stats } from './data/content'
 
 export const SITE_URL = 'https://swayambhuti.com'
 export const OG_IMAGE = `${SITE_URL}/og.jpg`
@@ -106,7 +106,7 @@ const org = {
   },
 }
 
-const person = {
+export const person = {
   '@type': 'Person',
   '@id': `${SITE_URL}/#sunil`,
   name: 'Sunil Anandani',
@@ -125,15 +125,19 @@ const faqPage = {
   mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
 }
 
-const crumbs = (path) => ({
+// items: [[name, path], …] after Home. Default: the route's own title.
+const crumbs = (path, items) => ({
   '@type': 'BreadcrumbList',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL + '/' },
-    { '@type': 'ListItem', position: 2, name: routes[path].title.split(/[—|]/)[0].trim(), item: SITE_URL + path },
-  ],
+  itemListElement: [['Home', '/'], ...(items || [[routes[path].title.split(/[—|]/)[0].trim(), path]])].map(([name, p], i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name,
+    item: SITE_URL + p,
+  })),
 })
 
-export function schemaFor(path) {
+// page (optional): per-page overrides from data/blog.js — { schema: [...], crumbs: [...] }.
+export function schemaFor(path, page = {}) {
   const graph = [org, website]
   if (path === '/') graph.push(person, faqPage)
   if (path === '/about') graph.push(person, { '@type': 'AboutPage', url: SITE_URL + path, mainEntity: { '@id': `${SITE_URL}/#sunil` } })
@@ -149,14 +153,17 @@ export function schemaFor(path) {
   if (path === '/case-studies')
     graph.push({ '@type': 'ItemList', itemListElement: cases.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.title, description: c.result })) })
   if (path === '/industries') graph.push({ '@type': 'ItemList', itemListElement: industries.map((x, i) => ({ '@type': 'ListItem', position: i + 1, name: x.name })) })
-  if (path === '/blog') graph.push({ '@type': 'Blog', name: 'SME Growth Blog', blogPost: posts.map((p) => ({ '@type': 'BlogPosting', headline: p.title, description: p.excerpt, author: { '@id': `${SITE_URL}/#sunil` } })) })
   if (path === '/contact') graph.push({ '@type': 'ContactPage', url: SITE_URL + path })
-  if (path !== '/') graph.push(crumbs(path))
+  if (page.schema) graph.push(...page.schema)
+  if (path !== '/') graph.push(crumbs(path, page.crumbs))
   return { '@context': 'https://schema.org', '@graph': graph }
 }
 
-export function headTags(path) {
-  const m = routes[path] || routes['/']
+// page (optional): { title, description, type, image, published, modified, noindex, schema, crumbs } —
+// used for routes that aren't in `routes`, such as blog articles.
+export function headTags(path, page) {
+  const m = page || routes[path] || routes['/']
+  const image = m.image || OG_IMAGE
   const url = SITE_URL + (path === '/' ? '/' : path)
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
   return [
@@ -164,27 +171,29 @@ export function headTags(path) {
     `<meta name="description" content="${esc(m.description)}" />`,
     `<meta name="keywords" content="${esc(keywords.join(', '))}" />`,
     `<link rel="canonical" href="${url}" />`,
-    `<meta property="og:type" content="website" />`,
+    ...(m.noindex ? ['<meta name="robots" content="noindex, nofollow" />'] : []),
+    `<meta property="og:type" content="${m.type || 'website'}" />`,
+    ...(m.published ? [`<meta property="article:published_time" content="${m.published}" />`, `<meta property="article:modified_time" content="${m.modified || m.published}" />`, `<meta property="article:author" content="Sunil Anandani" />`] : []),
     `<meta property="og:site_name" content="${site.name}" />`,
     `<meta property="og:locale" content="en_IN" />`,
     `<meta property="og:title" content="${esc(m.title)}" />`,
     `<meta property="og:description" content="${esc(m.description)}" />`,
     `<meta property="og:url" content="${url}" />`,
-    `<meta property="og:image" content="${OG_IMAGE}" />`,
-    `<meta property="og:image:width" content="1200" />`,
-    `<meta property="og:image:height" content="630" />`,
+    `<meta property="og:image" content="${image}" />`,
+    ...(m.image ? [] : ['<meta property="og:image:width" content="1200" />', '<meta property="og:image:height" content="630" />']),
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${esc(m.title)}" />`,
     `<meta name="twitter:description" content="${esc(m.description)}" />`,
-    `<meta name="twitter:image" content="${OG_IMAGE}" />`,
-    `<script type="application/ld+json">${JSON.stringify(schemaFor(path)).replace(/</g, '\\u003c')}</script>`,
+    `<meta name="twitter:image" content="${image}" />`,
+    `<script type="application/ld+json">${JSON.stringify(schemaFor(path, m)).replace(/</g, '\\u003c')}</script>`,
   ].join('\n    ')
 }
 
 // Runtime: keep title / description / canonical correct during client-side navigation.
-export function useSeo(path) {
+// page (optional) overrides routes[path], e.g. an article's own title and description.
+export function useSeo(path, page) {
+  const m = page || routes[path]
   useEffect(() => {
-    const m = routes[path]
     if (!m) return
     document.title = m.title
     const set = (sel, attr, val) => {
@@ -201,7 +210,10 @@ export function useSeo(path) {
     set('meta[property="og:title"]', 'content', m.title)
     set('meta[property="og:description"]', 'content', m.description)
     set('link[rel="canonical"]', 'href', SITE_URL + path)
-  }, [path])
+    const robots = document.head.querySelector('meta[name="robots"]')
+    if (m.noindex) set('meta[name="robots"]', 'content', 'noindex, nofollow')
+    else if (robots) robots.remove()
+  }, [path, m])
 }
 
 export const statsLine = stats.map((s) => `${s.value}${s.suffix} ${s.label.toLowerCase()}`).join(', ')

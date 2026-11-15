@@ -20,6 +20,7 @@ export const pages = {
   Training: fromPages('Training'),
   TestimonialsPage: fromPages('TestimonialsPage'),
   Blog: fromPages('Blog'),
+  BlogPost: fromPages('BlogPost'),
   Contact: fromPages('Contact'),
   NotFound: fromPages('NotFound'),
 }

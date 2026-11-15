@@ -6,7 +6,7 @@ import { captureAttribution, loadTags } from './lib/marketing'
 import { flushLeadQueue } from './lib/leads'
 import { pages } from '@pages'
 
-const { Home, HealthCheck, About, Blog, CaseStudies, Contact, Engine, Industries, NotFound, Services, TestimonialsPage, Training } = pages
+const { Home, HealthCheck, About, Blog, BlogPost, CaseStudies, Contact, Engine, Industries, NotFound, Services, TestimonialsPage, Training } = pages
 
 const routes = [
   ['/', Home],
@@ -19,6 +19,7 @@ const routes = [
   ['/training', Training],
   ['/testimonials', TestimonialsPage],
   ['/blog', Blog],
+  ['/blog/:slug', BlogPost],
   ['/contact', Contact],
   ['*', NotFound],
 ]

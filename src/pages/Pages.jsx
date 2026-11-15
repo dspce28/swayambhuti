@@ -1,6 +1,8 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform } from 'motion/react'
-import { cases, industries, pillars, posts, services, site, stats, testimonials, trainings } from '../data/content'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { cases, industries, pillars, services, site, stats, testimonials, trainings } from '../data/content'
+import { articleSeo, articles, getArticle, related, showDrafts } from '../data/blog'
 import Icon from '../components/Icon'
 import { Button, Counter, ease, Heading, Reveal, rise, SplitText, Stagger, TiltCard } from '../components/motion'
 import { CTA } from '../components/Layout'
@@ -429,31 +431,158 @@ export function TestimonialsPage() {
 }
 
 /* ================= BLOG ================= */
+function PostCard({ a, i, feature }) {
+  return (
+    <motion.article variants={rise} className={`post ${feature ? 'post-feature' : ''}`} data-cursor="hover">
+      <Link to={a.path} className="post-link" aria-label={a.title} />
+      <div className="post-art" aria-hidden={a.cover ? undefined : 'true'}>
+        {a.cover ? <img src={a.cover} alt={a.coverAlt} loading="lazy" decoding="async" /> : <span>{String(i + 1).padStart(2, '0')}</span>}
+      </div>
+      <div className="post-body">
+        <div className="post-chips">
+          <span className="chip">{a.category}</span>
+          {a.draft && <span className="chip chip-draft">Draft</span>}
+        </div>
+        <h3>{a.title}</h3>
+        <p>{a.description}</p>
+        <div className="post-meta">
+          <time dateTime={a.date}>{a.dateLabel}</time>
+          <span>{a.readMins} min read</span>
+        </div>
+      </div>
+    </motion.article>
+  )
+}
+
 export function Blog() {
   useSeo('/blog')
   return (
     <>
       <PageHero eyebrow="Insights & ideas" title="Business growth" em="blog." sub="Practical insights on SME transformation, operational excellence, sales performance, and leadership — from 20+ years of front-line experience." />
       <section className="section">
-        <Stagger className="container blog-grid">
-          {posts.map((p, i) => (
-            <motion.article variants={rise} className={`post ${i === 0 ? 'post-feature' : ''}`} key={p.title} data-cursor="hover">
-              <div className="post-art" aria-hidden="true">
-                <span>{String(i + 1).padStart(2, '0')}</span>
-              </div>
-              <div className="post-body">
-                <span className="chip">{p.cat}</span>
-                <h3>{p.title}</h3>
-                <p>{p.excerpt}</p>
-                <div className="post-meta">
-                  <span>{p.date}</span>
-                  <span>{p.read} read</span>
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </Stagger>
+        {showDrafts && articles.some((a) => a.draft) && (
+          <div className="container">
+            <p className="draft-note">Preview mode — articles marked Draft are visible here only, never on the live site.</p>
+          </div>
+        )}
+        {articles.length ? (
+          <Stagger className="container blog-grid">
+            {articles.map((a, i) => (
+              <PostCard key={a.slug} a={a} i={i} feature={i === 0} />
+            ))}
+          </Stagger>
+        ) : (
+          <div className="container blog-empty">
+            <h2 className="h2">The first articles are on their way.</h2>
+            <p className="muted">Meanwhile, find out where your business engine is leaking in three minutes.</p>
+            <Button to="/health-check">Take the Health Check</Button>
+          </div>
+        )}
       </section>
+      <CTA />
+    </>
+  )
+}
+
+export function BlogPost() {
+  const { slug } = useParams()
+  const a = getArticle(slug)
+  const seo = useMemo(() => (a ? articleSeo(a) : null), [a])
+  useSeo(a ? a.path : '/blog', seo)
+  const navigate = useNavigate()
+  if (!a) return <NotFound />
+
+  // On-site links inside the article body navigate without a full page reload.
+  const onBodyClick = (e) => {
+    const link = e.target.closest('a')
+    const href = link?.getAttribute('href')
+    if (!href || !href.startsWith('/') || href.startsWith('//') || link.target || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+    e.preventDefault()
+    navigate(href)
+  }
+  const more = related(a, 3)
+
+  return (
+    <>
+      <section className="page-hero article-hero">
+        <div className="orbs" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </div>
+        <div className="grid-lines" aria-hidden="true" />
+        <div className="container article-hero-inner">
+          <nav className="article-crumbs" aria-label="Breadcrumb">
+            <Link to="/blog">Blog</Link>
+            <span aria-hidden="true">/</span>
+            <span>{a.category}</span>
+          </nav>
+          {a.draft && <p className="draft-note dark">Draft — preview only. This article is not on the live site.</p>}
+          <motion.h1 className="h1 article-title" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.9, ease }}>
+            {a.title}
+          </motion.h1>
+          <motion.p className="lead" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9, ease }}>
+            {a.description}
+          </motion.p>
+          <div className="article-byline">
+            <img src="/img/sunil.webp" alt="" width="44" height="44" />
+            <div>
+              <strong>Sunil Anandani</strong>
+              <span>
+                <time dateTime={a.date}>{a.dateLabel}</time> · {a.readMins} min read
+                {a.updated && a.updated !== a.date && (
+                  <>
+                    {' '}
+                    · Updated <time dateTime={a.updated}>{a.updated.split('-').reverse().join('/')}</time>
+                  </>
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section article-section">
+        <div className="container article-wrap">
+          {a.cover && <img className="article-cover" src={a.cover} alt={a.coverAlt} decoding="async" />}
+          <article className="article-body" onClick={onBodyClick} dangerouslySetInnerHTML={{ __html: a.html }} />
+          {a.tags.length > 0 && (
+            <ul className="article-tags" aria-label="Topics">
+              {a.tags.map((t) => (
+                <li key={t} className="chip">
+                  {t}
+                </li>
+              ))}
+            </ul>
+          )}
+          <aside className="article-author">
+            <img src="/img/sunil.webp" alt="Sunil Anandani" width="72" height="72" loading="lazy" />
+            <div>
+              <strong>Sunil Anandani</strong>
+              <p className="muted">
+                Founder of Swayambhuti Consultants. 20+ years inside Indian SMEs, 150+ businesses transformed, and 300,000+ professionals impacted through consulting and training — from bank sales teams to MBA campuses.
+              </p>
+              <Link to="/about" className="text-link">
+                More about Sunil
+              </Link>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {more.length > 0 && (
+        <section className="section article-more">
+          <div className="container">
+            <h2 className="h2">Keep reading</h2>
+            <Stagger className="blog-grid">
+              {more.map((m, i) => (
+                <PostCard key={m.slug} a={m} i={i} />
+              ))}
+            </Stagger>
+          </div>
+        </section>
+      )}
+      <CTA />
     </>
   )
 }

@@ -178,14 +178,7 @@ export const values = [
   { name: 'Structured Thinking', text: 'Every recommendation is systematic, documented, and built to be sustainable without our involvement over time.' },
 ]
 
-export const posts = [
-  { cat: 'Operations', title: 'The 5 SOPs Every SME Must Document Before Scaling', excerpt: "Without these five foundational process documents, growth creates chaos — not opportunity. Here's what to build first.", date: 'March 2025', read: '8 min' },
-  { cat: 'Sales', title: "Why Your Sales Team Underperforms (It's Not What You Think)", excerpt: "Most sales problems are not talent problems — they're system problems. The fix is simpler and more structural than you expect.", date: 'February 2025', read: '6 min' },
-  { cat: 'Leadership', title: 'How to Stop Being the Bottleneck in Your Own Business', excerpt: "Owner dependency is the single most common growth killer in Indian SMEs. Here's a structured approach to removing yourself from daily operations.", date: 'January 2025', read: '7 min' },
-  { cat: 'Strategy', title: "From Reactive to Proactive: The SME Owner's Mental Model Shift", excerpt: "Growing a business requires a fundamentally different mindset from running one. Here's how to make the transition deliberately.", date: 'December 2024', read: '5 min' },
-  { cat: 'Customer Experience', title: 'The Customer Journey Audit: 7 Questions That Reveal Everything', excerpt: "Most businesses have a customer experience gap they don't know exists. These 7 diagnostic questions expose it immediately.", date: 'November 2024', read: '9 min' },
-  { cat: 'Finance & Growth', title: 'Predictable Revenue: What It Is, Why It Matters, How to Build It', excerpt: "Unpredictable revenue is the most stressful aspect of running an SME. Here's how to architect a business that generates consistent monthly income.", date: 'October 2024', read: '11 min' },
-]
+// Blog articles live in content/blog/*.md (see README → Blog).
 
 // ⚠️ Scarcity line used in the final CTA. It must be TRUE — confirm the number with Sunil before launch.
 export const availability = 'Accepting 5 new SME engagements — Q1 2027'

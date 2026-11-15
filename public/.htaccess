@@ -1,8 +1,16 @@
 # SPA fallback for Apache / LiteSpeed (Hostinger): serve index.html for client-side routes
+# /blog is both blog.html and the blog/ folder of articles — don't let Apache redirect /blog to /blog/
+<IfModule mod_dir.c>
+  DirectorySlash Off
+</IfModule>
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
   RewriteRule ^index\.html$ - [L]
+  # /blog/ -> /blog (folder that also has a prerendered page)
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^(.+)/$ /$1 [R=301,L]
   # prerendered pages: /about -> about.html
   RewriteCond %{REQUEST_FILENAME}.html -f
   RewriteRule ^(.+?)/?$ $1.html [L]
