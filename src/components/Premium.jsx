@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView, useMotionValueEvent, useScroll, useSpring, useTransform } from 'motion/react'
 import { Link, useNavigate } from 'react-router-dom'
-import { availability, faqs, impact, process, testimonials, values } from '../data/content'
+import { availability, faqs, gallery, impact, process, testimonials, values } from '../data/content'
 import { questions } from '../data/healthcheck'
 import { scenes } from './Scenes'
 import { EngineGears } from './Gears'
@@ -456,6 +456,41 @@ export function ScarcityCTA({ title = 'Start with', em = 'sixty minutes.' }) {
           </Button>
         </Reveal>
       </div>
+    </section>
+  )
+}
+
+/* =========================================================
+   In the room — two drifting strips of real session photos
+   ========================================================= */
+export function InTheRoom({ title = '300,000+ professionals.', em = 'Rooms like these.', sub }) {
+  const ref = useRef(null)
+  const onScreen = useInView(ref, { margin: '120px' }) // strips only move while visible
+  const rows = [gallery.filter((_, i) => i % 2 === 0), gallery.filter((_, i) => i % 2 === 1)]
+  return (
+    <section className={`section room ${onScreen ? 'is-live' : ''}`} ref={ref}>
+      <div className="container">
+        <div className="split-head">
+          <Heading eyebrow="In the room" title={title} em={em} light />
+          <Reveal as="p" className="lead side-lead" delay={0.1}>
+            {sub || 'Workshops, leadership sessions and team sprints run by Sunil Anandani across India — no stock photos.'}
+          </Reveal>
+        </div>
+      </div>
+      {rows.map((row, r) => (
+        <div className={`room-row ${r ? 'rev' : ''}`} key={r}>
+          <div className="room-track">
+            {[0, 1].map((dup) =>
+              row.map((g) => (
+                <figure className="room-tile" key={`${dup}-${g.src}`} aria-hidden={dup === 1} style={{ aspectRatio: `${g.w} / ${g.h}` }}>
+                  <img src={g.src} alt={dup ? '' : `${g.caption} led by Sunil Anandani`} width={g.w} height={g.h} loading="lazy" decoding="async" />
+                  <figcaption>{g.caption}</figcaption>
+                </figure>
+              )),
+            )}
+          </div>
+        </div>
+      ))}
     </section>
   )
 }

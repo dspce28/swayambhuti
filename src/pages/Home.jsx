@@ -15,7 +15,7 @@ import { industries, painTicker, pains, pillars, services, stats, testimonials }
 import Icon from '../components/Icon'
 import { Button, Counter, Deferred, ease, Heading, Marquee, Reveal, rise, SplitText, Stagger, TiltCard } from '../components/motion'
 import { EngineGears } from '../components/Gears'
-import { FAQ, HealthTeaser, Impact, MeetSunil, ProcessPinned, ScarcityCTA, StackedTestimonials, ValuesQuad } from '../components/Premium'
+import { FAQ, HealthTeaser, Impact, InTheRoom, MeetSunil, ProcessPinned, ScarcityCTA, StackedTestimonials, ValuesQuad } from '../components/Premium'
 import { useSeo } from '../seo'
 
 const EngineCanvas = lazy(() => import('../three/EngineCanvas'))
@@ -448,7 +448,7 @@ export default function Home() {
       <Hero />
       <Marquee items={painTicker} className="marquee-pain" />
       <Problem />
-      {[HealthTeaser, MeetSunil, Services, EngineScroller, Impact, ProcessPinned, StatsBand, ValuesQuad, Industries, StackedTestimonials, FAQ, ScarcityCTA].map((S, i) => (
+      {[HealthTeaser, MeetSunil, InTheRoom, Services, EngineScroller, Impact, ProcessPinned, StatsBand, ValuesQuad, Industries, StackedTestimonials, FAQ, ScarcityCTA].map((S, i) => (
         <Deferred key={i}>
           <S {...(S === ValuesQuad ? { dark: true } : {})} />
         </Deferred>

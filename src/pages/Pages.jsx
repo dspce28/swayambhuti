@@ -4,7 +4,7 @@ import { cases, industries, pillars, posts, services, site, stats, testimonials,
 import Icon from '../components/Icon'
 import { Button, Counter, ease, Heading, Reveal, rise, SplitText, Stagger, TiltCard } from '../components/motion'
 import { CTA } from '../components/Layout'
-import { FAQ, StackedTestimonials, ValuesQuad } from '../components/Premium'
+import { FAQ, InTheRoom, StackedTestimonials, ValuesQuad } from '../components/Premium'
 import { useSeo } from '../seo'
 import { submitLead } from '../lib/leads'
 import { track } from '../lib/marketing'
@@ -59,7 +59,7 @@ export function About() {
         <div className="container founder-grid">
           <div className="portrait-wrap">
             <motion.div className="portrait" initial={{ clipPath: 'inset(0 100% 0 0 round 28px)' }} whileInView={{ clipPath: 'inset(0 0% 0 0 round 28px)' }} viewport={{ once: true }} transition={{ duration: 1.4, ease }}>
-              <img src="/img/sunil-bw.webp" alt="Sunil Anandani" loading="lazy" />
+              <img src="/img/sunil.webp" alt="Sunil Anandani" loading="lazy" />
             </motion.div>
           </div>
           <div className="prose">
@@ -326,6 +326,7 @@ export function Training() {
           ))}
         </Stagger>
       </section>
+      <InTheRoom title="Sessions that" em="change how teams work." sub="A glimpse of recent workshops, leadership sessions and team-engagement sprints." />
       <CTA title="Book a" em="training program." sub="All programs can be customized for your industry and team size. Get in touch to discuss your requirements." />
     </>
   )

@@ -3093,7 +3093,7 @@ figcaption small {
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%);
   mask-image: linear-gradient(90deg, transparent 0%, #000 30%);
   object-fit: cover;
-  object-position: center 12%;
+  object-position: center 18%;
 }
 .meet-shade {
   position: absolute;
@@ -3366,6 +3366,7 @@ body {
   color: var(--gold-2);
 }
 .scta .lead,
+.room .lead,
 .teaser .lead,
 .hc .lead,
 .meet .lead,
@@ -3529,4 +3530,95 @@ body {
   color: #ffb4a0;
   font-size: 0.9rem;
   margin: -6px 0 14px;
+}
+
+/* ---------- In the room: drifting photo strips ---------- */
+.room {
+  background: var(--ink);
+  color: var(--cream);
+  overflow-x: clip;
+}
+.room-row {
+  overflow: hidden;
+  padding: 8px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.room-track {
+  display: flex;
+  gap: 14px;
+  width: max-content;
+  animation: room-drift 70s linear infinite;
+  animation-play-state: paused; /* runs only while the section is on screen */
+}
+.room.is-live .room-track {
+  animation-play-state: running;
+}
+.room-row.rev .room-track {
+  animation-direction: reverse;
+  animation-duration: 80s;
+}
+.room-row:hover .room-track {
+  animation-play-state: paused;
+}
+@keyframes room-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.room-tile {
+  position: relative;
+  height: clamp(180px, 24vw, 300px);
+  border-radius: 18px;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin: 0;
+  background: var(--forest-2);
+}
+.room-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.55) brightness(0.88);
+  transform: scale(1.02);
+  transition: filter 0.6s var(--ease), transform 0.8s var(--ease);
+}
+.room-tile:hover img {
+  filter: none;
+  transform: scale(1.07);
+}
+.room-tile figcaption {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(6, 19, 13, 0.78);
+  color: var(--cream);
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s, transform 0.5s var(--ease);
+}
+.room-tile:hover figcaption {
+  opacity: 1;
+  transform: none;
+}
+@media (hover: none) {
+  .room-tile figcaption {
+    opacity: 1;
+    transform: none;
+  }
+  .room-tile img {
+    filter: saturate(0.8);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .room-track {
+    animation: none;
+  }
+  .room-row {
+    overflow-x: auto;
+  }
 }

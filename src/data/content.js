@@ -217,3 +217,18 @@ export const faqs = [
   { q: 'Do you work only in one city?', a: 'No. Swayambhuti serves SMEs across India, with client work in cities including Pune, Ahmedabad and Mumbai. Engagements combine on-site workshops with remote follow-through.' },
   { q: 'Who is Sunil Anandani?', a: 'Sunil Anandani is the founder and chief consultant of Swayambhuti Consultants — an SME business transformation specialist with 20+ years of experience, 150+ businesses transformed and 300,000+ professionals impacted through consulting and training.' },
 ]
+
+// Real photos from Sunil's sessions (public/img/work). Captions describe only what is visible.
+// ⚠️ Attendees are identifiable in some photos — confirm the organisers are happy for them to be public.
+export const gallery = [
+  { src: '/img/work/session-hands.webp', w: 960, h: 720, caption: 'Corporate training session' },
+  { src: '/img/work/venue-mic.webp', w: 960, h: 640, caption: 'Interactive workshop' },
+  { src: '/img/work/team-outdoor.webp', w: 960, h: 640, caption: 'Team engagement activity' },
+  { src: '/img/work/event-mic.webp', w: 960, h: 638, caption: 'Business forum' },
+  { src: '/img/work/hotel.webp', w: 604, h: 1280, caption: 'Team training' },
+  { src: '/img/work/flipchart.webp', w: 960, h: 639, caption: 'Facilitating a session' },
+  { src: '/img/work/venue-wide.webp', w: 960, h: 640, caption: 'Workshop in session' },
+  { src: '/img/work/network-mic.webp', w: 724, h: 1086, caption: 'Business network meet' },
+  { src: '/img/work/screen.webp', w: 960, h: 720, caption: 'Training session' },
+  { src: '/img/work/stage.webp', w: 864, h: 1152, caption: 'Keynote session' },
+]
