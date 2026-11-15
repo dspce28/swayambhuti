@@ -1,0 +1,58 @@
+# Saturday 10:01 IST: research + draft next week's LinkedIn/Instagram posts into the approval Sheet.
+name: Social — draft next week
+on:
+  schedule:
+    - cron: '31 4 * * 6' # 04:31 UTC Saturday = 10:01 IST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (print only, no Sheet writes, no commit)'
+        type: boolean
+        default: false
+      force:
+        description: 'Redraft a week that is already in the Sheet'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency: social-content
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: automation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - name: Draft
+        run: node draft.js
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SOCIAL_SHEET_URL: ${{ secrets.SOCIAL_SHEET_URL }}
+          SOCIAL_SHEET_SECRET: ${{ secrets.SOCIAL_SHEET_SECRET }}
+          PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+          FORCE: ${{ inputs.force && '1' || '' }}
+      - name: Commit images so the website serves them
+        if: ${{ !inputs.dry_run }}
+        working-directory: .
+        run: |
+          git add public/social
+          if git diff --cached --quiet; then echo "No new images"; exit 0; fi
+          git config user.name "social-bot"
+          git config user.email "social-bot@users.noreply.github.com"
+          git commit -m "Social: images for next week's posts"
+          for i in 1 2 3 4; do git pull --rebase && git push && exit 0; sleep $((i * 5)); done
+          exit 1

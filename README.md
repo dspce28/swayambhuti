@@ -15,6 +15,7 @@ npm run preview  # serve the build
 | --- | --- |
 | `src/data/content.js` | **All site copy** — services, case studies, testimonials, contact details. Edit text here. |
 | `content/blog/*.md` | **Blog articles** — one Markdown file per article (see Blog below). |
+| `automation/` | **LinkedIn + Instagram automation** — weekly drafts, approval Sheet, scheduled posting. See `automation/README.md`. |
 | `src/three/GearField.jsx` | The hero 3D scene: particles assemble from chaos into three meshing gears (Systemize / Humanize / Monetize). |
 | `src/three/EngineCanvas.jsx` | Lazy-loaded canvas wrapper; lowers particle count on phones / low-memory devices and pauses when off-screen. |
 | `src/components/motion.jsx` | Animation primitives: split-text reveals, counters, magnetic buttons, tilt cards, velocity marquee. |

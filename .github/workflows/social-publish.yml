@@ -1,0 +1,47 @@
+# Posts Approved rows whose planned time has passed. Runs just after each posting slot (automation/lib/config.js
+# SLOTS: 09:15, 12:30, 19:00 IST) and again an hour later as a retry. If you change SLOTS, change these times too.
+name: Social — publish due posts
+on:
+  schedule:
+    - cron: '47 3,4 * * *' # 09:17 and 10:17 IST
+    - cron: '2 7,8 * * *' # 12:32 and 13:32 IST
+    - cron: '32 13,14 * * *' # 19:02 and 20:02 IST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (print what would be posted)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency: social-publish # never two publishers at once
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: automation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: automation/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node publish.js
+        env:
+          SOCIAL_SHEET_URL: ${{ secrets.SOCIAL_SHEET_URL }}
+          SOCIAL_SHEET_SECRET: ${{ secrets.SOCIAL_SHEET_SECRET }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_PERSON_URN: ${{ vars.LINKEDIN_PERSON_URN }}
+          LINKEDIN_VERSION: ${{ vars.LINKEDIN_VERSION }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_USER_ID: ${{ vars.INSTAGRAM_USER_ID }}
+          INSTAGRAM_API_BASE: ${{ vars.INSTAGRAM_API_BASE }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}

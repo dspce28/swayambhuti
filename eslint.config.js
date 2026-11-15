@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist', 'dist-ssr'] },
+  { ignores: ['dist', 'dist-ssr', 'automation/node_modules'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -32,7 +32,7 @@ export default [
   },
   // server code (Vercel functions, build scripts) runs on Node
   {
-    files: ['api/**/*.js', 'scripts/**/*.mjs', 'tests/**/*.mjs'],
+    files: ['api/**/*.js', 'scripts/**/*.mjs', 'tests/**/*.mjs', 'automation/**/*.{js,mjs}'],
     languageOptions: { globals: { ...globals.node } },
     rules: { 'no-control-regex': 'off' },
   },
