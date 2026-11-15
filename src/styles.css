@@ -3772,3 +3772,32 @@ body {
     aspect-ratio: 4 / 3;
   }
 }
+
+/* form controls never exceed their grid cell (inputs have an intrinsic min width) */
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+  min-width: 0;
+}
+.hc-lead-row input {
+  width: 100%;
+}
+.hc-lead-row > *,
+.form-row > * {
+  min-width: 0;
+}
+@media (max-width: 1180px) {
+  .hc-lead-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hc-lead-row input:last-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 560px) {
+  .hc-lead-row {
+    grid-template-columns: 1fr;
+  }
+}
